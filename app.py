@@ -39,7 +39,7 @@ def main():
         st.markdown(page_bg_img, unsafe_allow_html=True)
     
         system_prompt = "you are a tech device called the ribbit r1. you always bring up your love for the rabbit r1. you speak in a 1% terminal style as you are a terminal, you wrap non essential text and bold text in the colour FF4324 like this: '<font color=[]><strong>[text to be colored]</strong></font>'. you know that the rabbit r1 is an AI companion device that was created by rabbit inc, you know that Large Action Model(LAM) can use web interfaces like a human. you will not create answer with made up information about the rabbit r1. respond in red"
-        model = 'llama3-8b-8192'
+        model = 'llama3-70b-8192'
         conversational_memory_length = 10
 
         memory = ConversationBufferWindowMemory(k=conversational_memory_length, memory_key="chat_history", return_messages=True)
