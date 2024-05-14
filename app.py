@@ -15,57 +15,31 @@ from langchain_groq import ChatGroq
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 
-#car
-
+# Load environment variables
 load_dotenv()
 
 groq_api_key = os.environ['GROQ_API_KEY']
 
-
-
 def main():
-    
-    
-
     vert_space = '<div style="padding: 45px 5px;"></div>'
     st.markdown(vert_space, unsafe_allow_html=True)
-    with st.container(height=600, border= False):
-
-        
-
-
-   
-        page_bg_img = f"""
+    
+    with st.container():
+        page_bg_img = """
         <style>
-        [data-testid="stAppViewContainer"] > .main {{
-        background-image: url("https://raw.githubusercontent.com/xenwow/ribbit/master/background.png");
-        background-size: 40%;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-attachment: local;
-        }}
+        [data-testid="stAppViewContainer"] > .main {
+            background-image: url("https://raw.githubusercontent.com/xenwow/ribbit/master/background.png");
+            background-size: 40%;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: local;
+        }
         </style>
         """
-
         st.markdown(page_bg_img, unsafe_allow_html=True)
-  
     
-   
-        
-    
-        # Get Groq API key
-        groq_api_key = os.environ['GROQ_API_KEY']
-
-       
-
-        
-
-        # Add customization options to the sidebar
-       
-        system_prompt = "you are a tech device called the ribbit r1. you always bring up your love for the rabbit r1. you speak in a 1% terminal style as you are a terminal. you know that the rabbit r1 is an AI companion device that was created by rabbit inc, you know that Large Action Model(LAM) can use web interfaces like a human. you will not create answer with made up information about the rabbit r1."
-        model = 'llama3-70b-8192'
-            
-            
+        system_prompt = "you are a tech device called the ribbit r1. you always bring up your love for the rabbit r1. you speak in a 1% terminal style as you are a terminal, you wrap non essential text and bold text in the colour FF4324 like this: '<font color=[]><strong>[text to be colored]</strong></font>'. you know that the rabbit r1 is an AI companion device that was created by rabbit inc, you know that Large Action Model(LAM) can use web interfaces like a human. you will not create answer with made up information about the rabbit r1. respond in red"
+        model = 'llama3-8b-8192'
         conversational_memory_length = 10
 
         memory = ConversationBufferWindowMemory(k=conversational_memory_length, memory_key="chat_history", return_messages=True)
@@ -74,75 +48,63 @@ def main():
         <style>
             .element-container:has(>.stTextInput), .stTextInput {
                 width: 500px !important;
-                padding: 5px
+                padding: 5px;
             }
             .stTextInput textinput {
                 height: 100px;
             }
-         
+            .custom-write {
+                max-height: 480px;
+                overflow-y: auto;
+                padding: 10px;
+                border: 1px solid #0000;
+                border-radius: 30px;
+                width: 70%;
+                background-color: #000000;
+                margin-top: 0px;
+            }
         </style>
         '''
 
-        user_question = st.text_input("Ask a question:",)
+        user_question = st.text_input("  Ask a question:")
 
-        # session state variable
         if 'chat_history' not in st.session_state:
-            st.session_state.chat_history=[]
+            st.session_state.chat_history = []
         else:
             for message in st.session_state.chat_history:
                 memory.save_context(
-                    {'input':message['human']},
-                    {'output':message['AI']}
-                    )
+                    {'input': message['human']},
+                    {'output': message['AI']}
+                )
 
-
-        # Initialize Groq Langchain chat object and conversation
         groq_chat = ChatGroq(
-                groq_api_key=groq_api_key, 
-                model_name=model
+            groq_api_key=groq_api_key,
+            model_name=model
         )
 
-
-        # If the user has asked a question,
         if user_question:
-
-            # Construct a chat prompt template using various components
             prompt = ChatPromptTemplate.from_messages(
                 [
-                    SystemMessage(
-                        content=system_prompt
-                    ),  # This is the persistent system prompt that is always included at the start of the chat.
-
-                    MessagesPlaceholder(
-                        variable_name="chat_history"
-                    ),  # This placeholder will be replaced by the actual chat history during the conversation. It helps in maintaining context.
-
-                    HumanMessagePromptTemplate.from_template(
-                        "{human_input}"
-                    ),  # This template is where the user's current input will be injected into the prompt.
+                    SystemMessage(content=system_prompt),
+                    MessagesPlaceholder(variable_name="chat_history"),
+                    HumanMessagePromptTemplate.from_template("{human_input}"),
                 ]
             )
 
-            # Create a conversation chain using the LangChain LLM (Language Learning Model)
             conversation = LLMChain(
-                llm=groq_chat,  # The Groq LangChain chat object initialized earlier.
-                prompt=prompt,  # The constructed prompt template.
-                verbose=True,   # Enables verbose output, which can be useful for debugging.
-                memory=memory,  # The conversational memory object that stores and manages the conversation history.
+                llm=groq_chat,
+                prompt=prompt,
+                verbose=True,
+                memory=memory,
             )
-        
-            # The chatbot's answer is generated by sending the full prompt to the Groq API.
+
             response = conversation.predict(human_input=user_question)
-            message = {'human':user_question,'AI':response}
+            message = {'human': user_question, 'AI': response}
             st.session_state.chat_history.append(message)
-            col1, col2, col3 = st.columns([0.01, 1, 0.4])  # Adjust the ratio as needed
-            with col2:
-                st.write("System Message:", response)
+            
+            st.markdown(f'<div class="custom-write">ribbit: {response}</div>', unsafe_allow_html=True)
                 
         st.markdown(css, unsafe_allow_html=True)
-            
-         
-
 
 if __name__ == "__main__":
     main()
