@@ -1,2 +1,2 @@
-# Groq-Chat-App
-Groq Chat App built using Groq API and Streamlit.
+**ribbit r1 app with sys promp**
+this is a sys prompt editable llm using groq
